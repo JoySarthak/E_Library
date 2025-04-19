@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Library Admin Dashboard</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #34495e;
+        --accent-color: #3498db;
+      }
+
+      body {
+        background-color: #f8f9fa;
+      }
+
+      .navbar {
+        background-color: var(--primary-color);
+        padding: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .navbar-brand {
+        color: white !important;
+        font-weight: 600;
+        font-size: 1.5rem;
+      }
+
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        width: 250px;
+        background-color: var(--secondary-color);
+        padding-top: 80px;
+        z-index: 1000;
+        transition: all 0.3s ease;
+      }
+
+      .sidebar .nav-link {
+        color: rgba(255, 255, 255, 0.8);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+      }
+
+      .sidebar .nav-link:hover {
+        color: white;
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .sidebar .nav-link.active {
+        color: white;
+        background-color: var(--accent-color);
+      }
+
+      .sidebar .nav-link i {
+        margin-right: 10px;
+        font-size: 1.2rem;
+      }
+
+      .main-content {
+        margin-left: 250px;
+        padding: 2rem;
+        margin-top: 80px;
+        min-height: calc(100vh - 80px);
+        transition: all 0.3s ease;
+      }
+
+      .section {
+        padding-top: 1rem;
+      }
+
+      .card {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+      }
+
+      .card-header {
+        background-color: white;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1rem;
+      }
+
+      .table {
+        margin-bottom: 0;
+      }
+
+      .table th {
+        border-top: none;
+        background-color: #f8f9fa;
+        font-weight: 600;
+      }
+
+      .btn-primary {
+        background-color: var(--accent-color);
+        border-color: var(--accent-color);
+      }
+
+      .btn-primary:hover {
+        background-color: #2980b9;
+        border-color: #2980b9;
+      }
+
+      .btn-danger {
+        background-color: #e74c3c;
+        border-color: #e74c3c;
+      }
+
+      .btn-danger:hover {
+        background-color: #c0392b;
+        border-color: #c0392b;
+      }
+
+      .btn-success {
+        background-color: #2ecc71;
+        border-color: #2ecc71;
+      }
+
+      .btn-success:hover {
+        background-color: #27ae60;
+        border-color: #27ae60;
+      }
+
+      .stats-card {
+        background: linear-gradient(135deg, var(--accent-color), #2980b9);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        height: 100%;
+      }
+
+      .stats-card h3 {
+        margin: 0;
+        font-size: 2rem;
+      }
+
+      .stats-card p {
+        margin: 0;
+        opacity: 0.8;
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          transform: translateX(-100%);
+        }
+        .sidebar.active {
+          transform: translateX(0);
+        }
+        .main-content {
+          margin-left: 0;
+          margin-top: 60px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+      <div class="container-fluid">
+        <button class="btn btn-link text-white d-md-none" id="sidebarToggle">
+          <i class="bi bi-list fs-4"></i>
+        </button>
+        <a class="navbar-brand" href="#">
+          <i class="bi bi-shield-lock me-2"></i>Admin Dashboard
+        </a>
+        <div class="ms-auto d-flex align-items-center">
+          <a href="/" class="btn btn-outline-light btn-sm me-2">
+            <i class="bi bi-house me-1"></i>Home
+          </a>
+          <a href="/" onclick="logout()" class="btn btn-outline-light btn-sm">
+            <i class="bi bi-box-arrow-right me-1"></i>Logout
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <ul class="nav flex-column">
+        <li class="nav-item">
+          <a class="nav-link active" href="#" data-section="dashboard">
+            <i class="bi bi-speedometer2"></i>Dashboard
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" data-section="books">
+            <i class="bi bi-book"></i>Books
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" data-section="students">
+            <i class="bi bi-people"></i>Students
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" data-section="requests">
+            <i class="bi bi-file-text"></i>Requests
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Dashboard Section -->
+      <div id="dashboard" class="section">
+        <div class="row">
+          <div class="col-md-3">
+            <div class="stats-card">
+              <h3 id="totalBooks">0</h3>
+              <p>Total Books</p>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="stats-card">
+              <h3 id="totalStudents">0</h3>
+              <p>Total Students</p>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="stats-card">
+              <h3 id="pendingRequests">0</h3>
+              <p>Pending Requests</p>
+            </div>
+          </div>
+        </div>
+        <canvas id="booksBorrowingChart"></canvas>
+      </div>
+
+      <!-- Books Section -->
+      <div id="books" class="section" style="display: none">
+        <div class="card">
+          <div
+            class="card-header d-flex justify-content-between align-items-center"
+          >
+            <h5 class="mb-0">Manage Books</h5>
+            <button
+              class="btn btn-primary"
+              data-bs-toggle="modal"
+              data-bs-target="#addBookModal"
+            >
+              <i class="bi bi-plus-lg me-1"></i>Add New Book
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Copies</th>
+                    <th>Copies_left</th>
+                    <th>isbn</th>
+                  </tr>
+                </thead>
+                <tbody id="booksList"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Students Section -->
+      <div id="students" class="section" style="display: none">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Manage Students</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Username</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="studentsList"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Requests Section -->
+      <div id="requests" class="section" style="display: none">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Book Requests</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Book Title</th>
+                    <th>Request Date</th>
+                    <th>Due Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="requestsList"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Book Modal -->
+    <div class="modal fade" id="addBookModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Add New Book</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="addBookForm">
+              <div class="mb-3">
+                <label class="form-label">Title</label>
+                <input type="text" class="form-control" name="title" required />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Author</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="author"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Copies</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  name="copies"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">isbn</label>
+                <input type="text" class="form-control" name="isbn" required />
+              </div>
+              <button type="submit" class="btn btn-primary w-100">
+                Add Book
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Sidebar Toggle for Mobile
+      document.getElementById("sidebarToggle").addEventListener("click", () => {
+        document.querySelector(".sidebar").classList.toggle("active");
+      });
+
+      // Navigation
+      document.querySelectorAll(".nav-link").forEach((link) => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          document
+            .querySelectorAll(".nav-link")
+            .forEach((l) => l.classList.remove("active"));
+          link.classList.add("active");
+          document
+            .querySelectorAll(".section")
+            .forEach((section) => (section.style.display = "none"));
+          document.getElementById(link.dataset.section).style.display = "block";
+
+          // Close sidebar on mobile after selection
+          if (window.innerWidth <= 768) {
+            document.querySelector(".sidebar").classList.remove("active");
+          }
+        });
+      });
+
+      // Load Dashboard Stats
+      async function loadDashboardStats() {
+        try {
+          const response = await fetch("/api/stats");
+          const stats = await response.json();
+          document.getElementById("totalBooks").textContent = stats.totalBooks;
+          document.getElementById("totalStudents").textContent =
+            stats.totalStudents;
+          document.getElementById("pendingRequests").textContent =
+            stats.pendingRequests;
+          document.getElementById(
+            "totalDues"
+          ).textContent = `₹${stats.totalDues}`;
+        } catch (error) {
+          console.error("Error loading stats:", error);
+        }
+      }
+
+      // Load Books
+      async function loadBooks() {
+        try {
+          const response = await fetch("/api/books");
+          const books = await response.json();
+          const booksList = document.getElementById("booksList");
+          booksList.innerHTML = books
+            .map(
+              (book) => `
+                    <tr>
+                        <td>${book.title}</td>
+                        <td>${book.author}</td>
+                        <td>${book.copies}</td>
+                        <td>${book.availableCopies}</td>
+                        <td>${book.isbn}</td>
+                    </tr>
+                `
+            )
+            .join("");
+        } catch (error) {
+          console.error("Error loading books:", error);
+        }
+      }
+
+      // Load Students
+      async function loadStudents() {
+        try {
+          const response = await fetch("/api/students");
+          const students = await response.json();
+          const studentsList = document.getElementById("studentsList");
+          studentsList.innerHTML = students
+            .map(
+              (student) => `
+                    <tr>
+                        <td>${student.email}</td>
+                        <td>${student.username}</td>
+                        <td>${student.status}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary me-1" onclick="editStudent('${student._id}')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteStudent('${student._id}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `
+            )
+            .join("");
+        } catch (error) {
+          console.error("Error loading students:", error);
+        }
+      }
+
+      async function editStudent(studentId) {
+        const newUsername = prompt("Enter new username:");
+        const newEmail = prompt("Enter new email:");
+        const newStatus = prompt("Enter new status (Active/Inactive):");
+
+        if (!newUsername || !newEmail || !newStatus) {
+          alert("All fields are required!");
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/students/${studentId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              username: newUsername,
+              email: newEmail,
+              status: newStatus,
+            }),
+          });
+
+          const result = await response.json();
+          if (response.ok) {
+            alert(result.message);
+            loadStudents(); // Refresh student list
+          } else {
+            alert(result.error);
+          }
+        } catch (error) {
+          console.error("Error updating student:", error);
+          alert("Failed to update student.");
+        }
+      }
+
+      async function deleteStudent(studentId) {
+        if (!confirm("Are you sure you want to delete this student?")) {
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/students/${studentId}`, {
+            method: "DELETE",
+          });
+
+          const result = await response.json();
+          if (response.ok) {
+            alert(result.message);
+            loadStudents(); // Refresh student list
+          } else {
+            alert(result.error);
+          }
+        } catch (error) {
+          console.error("Error deleting student:", error);
+          alert("Failed to delete student.");
+        }
+      }
+      // Add Book
+      document
+        .getElementById("addBookForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const formData = new FormData(e.target);
+          try {
+            const response = await fetch("/admin/addBook", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                title: formData.get("title"),
+                author: formData.get("author"),
+                copies: parseInt(formData.get("copies")),
+                isbn: formData.get("isbn"),
+              }),
+            });
+            if (response.ok) {
+              alert("Book added successfully!");
+              e.target.reset();
+              bootstrap.Modal.getInstance(
+                document.getElementById("addBookModal")
+              ).hide();
+              loadBooks();
+              loadDashboardStats();
+            }
+          } catch (error) {
+            console.error("Error adding book:", error);
+            alert("Failed to add book");
+          }
+        });
+
+      // Load Requests
+      async function loadRequests() {
+        try {
+          const response = await fetch("/api/requests"); // Fetch requests from the correct API route
+          const requests = await response.json();
+          const requestsList = document.getElementById("requestsList");
+          requestsList.innerHTML = requests
+            .map(
+              (request) => `
+            <tr>
+                <td>${request.student?.username || "N/A"}</td>
+                <td>${request.book?.title || "N/A"}</td>
+                <td>${new Date(request.requestDate).toLocaleDateString()}</td>
+                <td>${new Date(request.dueDate).toLocaleDateString()}</td>
+                <td>
+                    <span class="badge ${
+                      request.status === "Pending"
+                        ? "bg-warning"
+                        : request.status === "Approved"
+                        ? "bg-success"
+                        : "bg-danger"
+                    }">
+                        ${request.status}
+                    </span>
+                </td>
+                <td>
+                    ${
+                      request.status === "Pending"
+                        ? `
+                        <button class="btn btn-sm btn-success me-1" onclick="updateRequestStatus('${request._id}', 'Approved')">
+                            <i class="bi bi-check-lg"></i> Approve
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="updateRequestStatus('${request._id}', 'Rejected')">
+                            <i class="bi bi-x-lg"></i> Reject
+                        </button>
+                    `
+                        : ""
+                    }
+                </td>
+            </tr>
+        `
+            )
+            .join("");
+        } catch (error) {
+          console.error("Error loading requests:", error);
+          alert("Failed to load requests");
+        }
+      }
+
+      // Update Request Status
+      async function updateRequestStatus(requestId, status) {
+        if (
+          !confirm(
+            `Are you sure you want to ${status.toLowerCase()} this request?`
+          )
+        ) {
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/requests/${requestId}`, {
+            // Correct API route
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ status }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            alert(data.message);
+            loadRequests(); // Refresh request list
+            loadDashboardStats();
+            loadBooks(); // Refresh book list to update available copies
+          } else {
+            alert(data.error || "Failed to update request");
+          }
+        } catch (error) {
+          console.error("Error updating request:", error);
+          alert("Failed to update request");
+        }
+      }
+
+      function logout() {
+        fetch("/api/auth/logout", {
+          method: "POST",
+        })
+          .then((response) => {
+            if (response.ok) {
+              window.location.href = "/login";
+            }
+          })
+          .catch((error) => {
+            console.error("Error logging out:", error);
+          });
+      }
+
+      // Initial load
+      loadDashboardStats();
+      loadBooks();
+      loadStudents();
+      loadRequests();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login Page</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: url(/photo2.png);
+      background-size: cover;
+      /* Ensures the image covers the whole background */
+      background-position: center;
+      /* Centers the image */
+      background-repeat: no-repeat;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .login-container {
+      background: rgba(168, 226, 224, 0.626);
+      padding: 2.5rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      width: 400px;
+      backdrop-filter: blur(10px);
+    }
+
+    .login-container h2 {
+      margin-bottom: 2rem;
+      color: #2d3748;
+      font-size: 1.8rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .input-group {
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #4a5568;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .input-group input,
+    .input-group select {
+      width: 100%;
+      padding: 12px 15px;
+      background: #f7fafc;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
+      font-size: 1rem;
+      color: #2d3748;
+      transition: all 0.3s ease;
+    }
+
+    .input-group input:focus,
+    .input-group select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(to right, #10cfcf, #4b91a2);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      margin-top: 1rem;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .forgot-password {
+      display: block;
+      margin-top: 1.5rem;
+      color: #667eea;
+      font-size: 0.9rem;
+      text-decoration: none;
+      text-align: center;
+      transition: color 0.2s ease;
+    }
+
+    .forgot-password:hover {
+      color: #764ba2;
+    }
+
+    .new {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: 0.9rem;
+      color: #4a5568;
+    }
+
+    .new a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .new a:hover {
+      color: #764ba2;
+    }
+
+    @media (max-width: 480px) {
+      .login-container {
+        padding: 2rem;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="login-container">
+    <h2>Login</h2>
+    <form id="loginForm"> <!-- Add id here -->
+      <div class="input-group">
+        <label for="role">Login as</label>
+        <select id="role" name="role">
+          <option value="admin">Admin</option>
+          <option value="student">Student</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Enter your username" required />
+      </div>
+
+      <div class="input-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required />
+      </div>
+
+      <button type="submit" class="login-btn">Login</button>
+      <a href="#" class="forgot-password">Forgot Password?</a>
+    </form>
+
+    <div class="new">
+      <p>New User?<a href="register"> Sign up now</a></p>
+    </div>
+  </div>
+
+  <script>
+  document
+  .getElementById("loginForm")
+  .addEventListener("submit", async function (event) {
+    event.preventDefault(); // Prevent default form submission
+    
+    const role = document.getElementById("role").value;
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
+
+    try {
+      const response = await fetch("/logon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role, username, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log("Login successful:", data);
+        
+        // Store login details in local storage
+        localStorage.setItem("userId", data.userId);
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("username", data.username);
+        localStorage.setItem("role", data.role);
+        
+        // Redirect based on role
+        if (data.role === "admin") {
+          window.location.href = "/admin"; // Redirect to admin page
+        } else if (data.role === "student") {
+          window.location.href = "/student"; // Redirect to student dashboard
+        }
+      } else {
+        console.error("Login failed:", data.error);
+        alert("Login failed: " + data.error); // Show error message
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      alert("Login failed. Please try again.");
+    }
+  });
+
+  </script>
+</body>
+</body>
+
+</html>
